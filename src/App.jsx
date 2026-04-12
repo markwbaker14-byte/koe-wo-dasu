@@ -268,7 +268,7 @@ export default function App() {
   // 決済モーダル
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   // ★ Stripeの Payment Link URLをここに設定する
-  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/YOUR_PAYMENT_LINK";
+  const PAYMENT_LINK = "https://buy.stripe.com/test_8x2cMY7VzfEIc1D4aP18c00";
   // オンボーディング
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardStep, setOnboardStep]       = useState(0);
