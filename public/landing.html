@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>声を出す。— 授業資料から、あなたの言葉を</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0E0D1A;
+    --bg2:       #13121F;
+    --bg3:       #1A1830;
+    --surface:   #1F1D30;
+    --border:    rgba(255,255,255,0.08);
+    --purple:    #6C5CE7;
+    --purple2:   #8B7CF0;
+    --purpleGlow:rgba(108,92,231,0.18);
+    --text:      #F0EFF8;
+    --textSub:   #9B98C0;
+    --textHint:  #5A5780;
+    --blue:      #4A9EF5;
+    --green:     #52D18C;
+    --amber:     #F5A623;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(14,13,26,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 20px; font-weight: 700;
+    letter-spacing: -0.02em; color: var(--text);
+  }
+  .nav-cta {
+    padding: 9px 22px; border-radius: 10px;
+    background: var(--purple); color: #fff;
+    font-size: 14px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-cta:hover { background: var(--purple2); transform: translateY(-1px); }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative; overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute; top: 20%; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(108,92,231,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(108,92,231,0.15);
+    border: 1px solid rgba(108,92,231,0.3);
+    font-size: 12px; color: var(--purple2);
+    font-weight: 500; letter-spacing: 0.04em;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(48px, 7vw, 80px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero-title .accent {
+    background: linear-gradient(135deg, var(--purple2), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 18px; color: var(--textSub);
+    max-width: 520px; line-height: 1.8;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s 0.2s ease both;
+    font-weight: 300;
+  }
+
+  .hero-actions {
+    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 64px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    padding: 14px 32px; border-radius: 12px;
+    background: var(--purple); color: #fff;
+    font-size: 15px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: var(--purple2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(108,92,231,0.35); }
+
+  .btn-ghost {
+    padding: 14px 28px; border-radius: 12px;
+    background: transparent; color: var(--textSub);
+    font-size: 15px; font-weight: 400;
+    text-decoration: none; border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  /* ── Hero mockup ── */
+  .hero-mockup {
+    width: 100%; max-width: 720px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: fadeUp 0.7s 0.4s ease both;
+    text-align: left;
+  }
+
+  .mockup-bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .mockup-body { padding: 20px; }
+
+  .mockup-topic {
+    font-size: 11px; color: var(--textHint); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .mockup-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 20px; font-weight: 600; margin-bottom: 12px;
+  }
+
+  .mockup-tabs {
+    display: flex; gap: 6px; margin-bottom: 16px;
+  }
+  .mockup-tab {
+    padding: 5px 12px; border-radius: 8px; font-size: 12px;
+  }
+  .mockup-tab.active { background: rgba(108,92,231,0.2); color: var(--purple2); }
+  .mockup-tab.inactive { background: rgba(255,255,255,0.04); color: var(--textHint); }
+
+  .mockup-cards { display: flex; flex-direction: column; gap: 8px; }
+
+  .mockup-card {
+    padding: 14px 16px; border-radius: 12px;
+    font-size: 13px; line-height: 1.65;
+  }
+  .mockup-card.blue  { background: rgba(74,158,245,0.1);  border: 1px solid rgba(74,158,245,0.2);  color: #9BC8F8; }
+  .mockup-card.green { background: rgba(82,209,140,0.1);  border: 1px solid rgba(82,209,140,0.2);  color: #8FDBAF; }
+  .mockup-card.purple{ background: rgba(108,92,231,0.1);  border: 1px solid rgba(108,92,231,0.2);  color: #B0A6F5; }
+
+  .mockup-hint {
+    font-size: 11px; margin-top: 6px; opacity: 0.65;
+  }
+
+  /* ── Pain section ── */
+  .pain {
+    padding: 100px 24px;
+    text-align: center;
+  }
+
+  .section-label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--purple2); font-weight: 500; margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700; line-height: 1.3;
+    margin-bottom: 20px;
+  }
+
+  .section-sub {
+    font-size: 16px; color: var(--textSub); max-width: 480px;
+    margin: 0 auto 60px; line-height: 1.8; font-weight: 300;
+  }
+
+  .pain-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px; max-width: 860px; margin: 0 auto;
+  }
+
+  .pain-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: left;
+  }
+
+  .pain-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 16px;
+  }
+
+  .pain-card h3 { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+  .pain-card p  { font-size: 13px; color: var(--textSub); line-height: 1.7; }
+
+  /* ── Features ── */
+  .features {
+    padding: 100px 24px;
+    background: var(--bg2);
+  }
+
+  .features-inner { max-width: 920px; margin: 0 auto; }
+
+  .features-header { text-align: center; margin-bottom: 64px; }
+
+  .feature-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 48px; align-items: center;
+    margin-bottom: 80px;
+  }
+  .feature-row.reverse { direction: rtl; }
+  .feature-row.reverse > * { direction: ltr; }
+
+  .feature-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    margin-bottom: 16px;
+  }
+
+  .feature-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 26px; font-weight: 700;
+    line-height: 1.35; margin-bottom: 16px;
+  }
+
+  .feature-desc {
+    font-size: 14px; color: var(--textSub);
+    line-height: 1.8; font-weight: 300;
+  }
+
+  .feature-visual {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    min-height: 200px;
+  }
+
+  /* ── Depth visual ── */
+  .depth-bars { display: flex; flex-direction: column; gap: 10px; }
+  .depth-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  }
+  .depth-bar.active-bar { background: rgba(108,92,231,0.15); border: 1px solid rgba(108,92,231,0.25); }
+  .depth-bar.dim { background: rgba(255,255,255,0.03); border: 1px solid transparent; }
+  .depth-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .depth-text { font-size: 13px; }
+  .depth-text b { display: block; font-weight: 500; margin-bottom: 2px; }
+  .depth-text span { font-size: 11px; color: var(--textHint); }
+
+  /* ── History visual ── */
+  .hist-list { display: flex; flex-direction: column; gap: 6px; }
+  .hist-subj {
+    font-size: 12px; color: var(--textSub); font-weight: 500;
+    padding: 8px 12px 4px; letter-spacing: 0.03em;
+  }
+  .hist-sess {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 8px; font-size: 12px;
+  }
+  .hist-sess.sel { background: rgba(108,92,231,0.2); border-left: 2px solid var(--purple); }
+  .hist-sess.dim { opacity: 0.5; }
+  .hist-num { color: var(--purple2); font-weight: 600; font-size: 11px; min-width: 32px; }
+  .hist-topic { color: var(--textSub); }
+
+  /* ── Pricing ── */
+  .pricing {
+    padding: 100px 24px;
+    text-align: center;
+  }
+
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px; max-width: 700px; margin: 0 auto;
+  }
+
+  .plan {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    text-align: left;
+    position: relative;
+  }
+
+  .plan.featured {
+    border-color: rgba(108,92,231,0.5);
+    background: linear-gradient(160deg, rgba(108,92,231,0.08) 0%, var(--bg2) 100%);
+  }
+
+  .plan-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    padding: 4px 14px; border-radius: 999px;
+    background: var(--purple); color: #fff;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+
+  .plan-name { font-size: 13px; color: var(--textSub); font-weight: 500; margin-bottom: 8px; }
+  .plan-price {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 40px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 4px;
+  }
+  .plan-price span { font-size: 16px; font-weight: 400; color: var(--textSub); }
+  .plan-note { font-size: 12px; color: var(--textHint); margin-bottom: 24px; }
+
+  .plan-divider { height: 1px; background: var(--border); margin-bottom: 20px; }
+
+  .plan-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .plan-feat {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: var(--textSub);
+  }
+  .plan-feat .check { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+  .plan-feat .cross { color: var(--textHint); flex-shrink: 0; margin-top: 1px; }
+
+  .plan-btn {
+    width: 100%; padding: 12px; border-radius: 12px;
+    font-size: 14px; font-weight: 500; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; border: none;
+  }
+  .plan-btn.primary { background: var(--purple); color: #fff; }
+  .plan-btn.primary:hover { background: var(--purple2); }
+  .plan-btn.ghost { background: transparent; color: var(--textSub); border: 1px solid var(--border); }
+  .plan-btn.ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  /* ── FAQ ── */
+  .faq {
+    padding: 80px 24px 100px;
+    max-width: 640px; margin: 0 auto;
+  }
+
+  .faq-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 32px; font-weight: 700;
+    text-align: center; margin-bottom: 48px;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+  }
+
+  .faq-q {
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    user-select: none;
+  }
+
+  .faq-arrow { color: var(--textHint); font-size: 12px; transition: transform 0.2s; flex-shrink: 0; }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+  .faq-a {
+    font-size: 14px; color: var(--textSub); line-height: 1.8;
+    max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+  .faq-item.open .faq-a { max-height: 200px; padding-top: 12px; }
+
+  /* ── CTA Bottom ── */
+  .cta-bottom {
+    padding: 100px 24px;
+    text-align: center;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+  }
+
+  .cta-bottom h2 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700; margin-bottom: 16px; line-height: 1.3;
+  }
+
+  .cta-bottom p {
+    font-size: 16px; color: var(--textSub);
+    margin-bottom: 40px; font-weight: 300;
+  }
+
+  /* ── Footer ── */
+  footer {
+    padding: 28px 40px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  footer .logo { font-family: 'Shippori Mincho', serif; font-size: 15px; color: var(--textSub); }
+  footer p { font-size: 12px; color: var(--textHint); }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── Responsive ── */
+  @media (max-width: 680px) {
+    nav { padding: 14px 20px; }
+    .feature-row { grid-template-columns: 1fr; }
+    .feature-row.reverse { direction: ltr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">声を出す。</div>
+  <a href="#pricing" class="nav-cta">無料で始める</a>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-tag">
+    📄 授業資料をアップロードするだけ
+  </div>
+
+  <h1 class="hero-title">
+    授業で<span class="accent">声を出す</span>ための<br>ヒントが、すぐ手に入る。
+  </h1>
+
+  <p class="hero-sub">
+    レジュメやスライドをアップロードすると、<br>
+    授業中に使える質問・発言・深掘りのヒントをAIが生成します。
+  </p>
+
+  <div class="hero-actions">
+    <a href="#app" class="btn-primary">→ 無料で使ってみる</a>
+    <a href="#features" class="btn-ghost">機能を見る</a>
+  </div>
+
+  <div class="hero-mockup">
+    <div class="mockup-bar">
+      <div class="dot" style="background:#FF5F57"></div>
+      <div class="dot" style="background:#FEBC2E"></div>
+      <div class="dot" style="background:#28C840"></div>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-topic">Today's Topic</div>
+      <div class="mockup-title">社会化と逸脱行動</div>
+      <div class="mockup-tabs">
+        <div class="mockup-tab active">? 質問する</div>
+        <div class="mockup-tab inactive">◎ 発言する</div>
+        <div class="mockup-tab inactive">↓ 深掘りする</div>
+      </div>
+      <div class="mockup-cards">
+        <div class="mockup-card blue">
+          社会化のプロセスは生涯続くとのことですが、成人後の「再社会化」の例として先生はどんなケースを想定していますか？
+          <div class="mockup-hint">💡 先生の専門的見解を引き出す問い</div>
+        </div>
+        <div class="mockup-card green">
+          逸脱行動が「社会の鏡」になるという話が興味深くて、SNSでの炎上も一種の逸脱と見ることはできますか？
+          <div class="mockup-hint">💡 現代事例を持ち込んで議論を広げる</div>
+        </div>
+        <div class="mockup-card purple">
+          ラベリング理論と今回の内容はどう関係するのでしょうか？前回の講義との接続が気になりました。
+          <div class="mockup-hint">💡 前回との接続を示して印象を残す</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pain -->
+<section class="pain">
+  <div class="section-label">こんな経験はありませんか</div>
+  <h2 class="section-title reveal">
+    「何か言いたいけど、<br>何を言えばいいかわからない」
+  </h2>
+  <p class="section-sub reveal">
+    日本の大学では、授業中の発言が難しいと感じる学生が多くいます。
+    準備不足ではなく、「どう言葉にするか」がわからないだけ。
+  </p>
+
+  <div class="pain-grid">
+    <div class="pain-card reveal">
+      <div class="pain-icon" style="background:rgba(245,166,35,0.12);">😶</div>
+      <h3>質問したいが、的外れだったらと不安</h3>
+      <p>せっかく考えたことも、恥ずかしくて口に出せない。そのまま授業が終わってしまう。</p>
+    </div>
+    <div class="pain-card reveal">
+      <div class="pain-icon" style="background:rgba(74,158,245,0.12);">📖</div>
+      <h3>資料を読んだが、何を聞けばいいかわからない</h3>
+      <p>予習はした。でも授業中に活かせる「問い」の立て方がわからない。</p>
+    </div>
+    <div class="pain-card reveal">
+      <div class="pain-icon" style="background:rgba(108,92,231,0.12);">🎓</div>
+      <h3>先生に覚えてもらいたいが、きっかけがない</h3>
+      <p>推薦状が必要なゼミ選び。でも教授との接点をどう作ればいいかわからない。</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <div class="section-label">機能</div>
+      <h2 class="section-title reveal">PDFを入れるだけ。それだけ。</h2>
+      <p class="section-sub reveal">難しい設定は何もありません。<br>授業のレジュメを入れると、その場で使える言葉が出てきます。</p>
+    </div>
+
+    <!-- Feature 1 -->
+    <div class="feature-row reveal">
+      <div>
+        <div class="feature-label" style="background:rgba(74,158,245,0.1); color:#4A9EF5;">
+          📄 資料解析
+        </div>
+        <h3 class="feature-title">資料の内容を読んで、<br>使える問いを生成</h3>
+        <p class="feature-desc">
+          授業のレジュメ・スライド・配布資料をアップロードすると、内容を理解した上で「質問する」「発言する」「深掘りする」の3種類のヒントを生成します。口語的で、そのまま使いやすい表現で出力されます。
+        </p>
+      </div>
+      <div class="feature-visual">
+        <div style="font-size:11px; color:var(--textHint); margin-bottom:12px; letter-spacing:0.06em; text-transform:uppercase;">生成例</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="padding:10px 12px; border-radius:10px; background:rgba(74,158,245,0.08); border:1px solid rgba(74,158,245,0.15); font-size:12px; color:#9BC8F8; line-height:1.6;">
+            「先生はこのテーマについて、ご自身の研究でどのようなアプローチを取られていますか？」
+          </div>
+          <div style="padding:10px 12px; border-radius:10px; background:rgba(82,209,140,0.08); border:1px solid rgba(82,209,140,0.15); font-size:12px; color:#8FDBAF; line-height:1.6;">
+            「この概念は現代のSNS文化にも当てはまるように思うのですが、いかがでしょうか？」
+          </div>
+          <div style="padding:10px 12px; border-radius:10px; background:rgba(108,92,231,0.08); border:1px solid rgba(108,92,231,0.2); font-size:12px; color:#B0A6F5; line-height:1.6;">
+            「先週学んだ○○と、今回の内容はどのように接続するのでしょうか？」
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="feature-row reverse reveal">
+      <div>
+        <div class="feature-label" style="background:rgba(108,92,231,0.1); color:var(--purple2);">
+          🎚 踏み込み度
+        </div>
+        <h3 class="feature-title">どこまで踏み込むか、<br>自分で選べる</h3>
+        <p class="feature-desc">
+          「授業内」から「個人的」まで3段階で調整できます。試験範囲の確認だけでいいときも、先生との距離を縮めたいときも、目的に合わせて切り替えられます。
+        </p>
+      </div>
+      <div class="feature-visual">
+        <div class="depth-bars">
+          <div class="depth-bar dim">
+            <div class="depth-dot" style="background:#5A5780;"></div>
+            <div class="depth-text">
+              <b style="color:var(--textSub);">授業内</b>
+              <span>資料の内容だけに絞った安全な問い</span>
+            </div>
+          </div>
+          <div class="depth-bar active-bar">
+            <div class="depth-dot" style="background:var(--purple);"></div>
+            <div class="depth-text">
+              <b style="color:var(--purple2);">応用・社会</b>
+              <span>時事・他分野・実社会との接続</span>
+            </div>
+          </div>
+          <div class="depth-bar dim">
+            <div class="depth-dot" style="background:#5A5780;"></div>
+            <div class="depth-text">
+              <b style="color:var(--textSub);">個人的</b>
+              <span>先生の経験・研究背景・私見を引き出す</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3 (Premium) -->
+    <div class="feature-row reveal">
+      <div>
+        <div class="feature-label" style="background:rgba(245,166,35,0.1); color:var(--amber);">
+          ★ プレミアム機能
+        </div>
+        <h3 class="feature-title">前の回の内容を踏まえた<br>発言を自動生成</h3>
+        <p class="feature-desc">
+          授業を科目・回ごとに保存しておくと、次回の解析時に「前回の○○を踏まえると…」という発言を自動生成できます。継続的に受講するゼミや演習で特に効果的です。
+        </p>
+      </div>
+      <div class="feature-visual">
+        <div class="hist-list">
+          <div class="hist-subj">社会学概論</div>
+          <div class="hist-sess dim">
+            <span class="hist-num">第1回</span>
+            <span class="hist-topic">社会化と自己</span>
+          </div>
+          <div class="hist-sess sel">
+            <span class="hist-num">第2回</span>
+            <span class="hist-topic" style="color:var(--text);">逸脱と規範</span>
+            <span style="margin-left:auto; font-size:10px; padding:2px 8px; border-radius:999px; background:rgba(108,92,231,0.3); color:var(--purple2);">参照中</span>
+          </div>
+          <div class="hist-sess dim" style="opacity:0.3;">
+            <span class="hist-num">第3回</span>
+            <span class="hist-topic">← 今日の授業</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="section-label">料金プラン</div>
+  <h2 class="section-title reveal">まず無料で始めてみてください</h2>
+  <p class="section-sub reveal">クレジットカード不要。<br>使い続けたくなったらアップグレードできます。</p>
+
+  <div class="pricing-grid">
+    <!-- Free -->
+    <div class="plan reveal">
+      <div class="plan-name">フリープラン</div>
+      <div class="plan-price">¥0<span> / 月</span></div>
+      <div class="plan-note">月5回まで無料</div>
+      <div class="plan-divider"></div>
+      <div class="plan-features">
+        <div class="plan-feat"><span class="check">✓</span><span>PDFアップロードと解析</span></div>
+        <div class="plan-feat"><span class="check">✓</span><span>質問・発言・深掘りヒント生成</span></div>
+        <div class="plan-feat"><span class="check">✓</span><span>踏み込み度・学年の調整</span></div>
+        <div class="plan-feat"><span class="cross">–</span><span style="color:var(--textHint);">講義メモを追加して再生成</span></div>
+        <div class="plan-feat"><span class="cross">–</span><span style="color:var(--textHint);">前回の授業を参照して生成</span></div>
+        <div class="plan-feat"><span class="cross">–</span><span style="color:var(--textHint);">科目・回ごとの保存（無制限）</span></div>
+      </div>
+      <button class="plan-btn ghost">無料で始める</button>
+    </div>
+
+    <!-- Premium -->
+    <div class="plan featured reveal">
+      <div class="plan-badge">おすすめ</div>
+      <div class="plan-name">プレミアムプラン</div>
+      <div class="plan-price">¥980<span> / 月</span></div>
+      <div class="plan-note">月額・いつでも解約可</div>
+      <div class="plan-divider"></div>
+      <div class="plan-features">
+        <div class="plan-feat"><span class="check">✓</span><span>フリープランのすべて（無制限）</span></div>
+        <div class="plan-feat"><span class="check">✓</span><span>講義メモを追加して再生成</span></div>
+        <div class="plan-feat"><span class="check">✓</span><span>前回の授業を参照して生成</span></div>
+        <div class="plan-feat"><span class="check">✓</span><span>科目・回ごとの保存（無制限）</span></div>
+        <div class="plan-feat"><span class="check">✓</span><span>優先サポート</span></div>
+      </div>
+      <button class="plan-btn primary">¥980 / 月で始める</button>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <h2 class="faq-title reveal">よくある質問</h2>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      アップロードしたPDFのデータはどうなりますか？
+      <span class="faq-arrow">▼</span>
+    </div>
+    <div class="faq-a">PDFの内容はAIによる解析のためにのみ使用され、サーバーに保存されることはありません。授業資料のプライバシーは保護されます。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      スキャンしたPDFは使えますか？
+      <span class="faq-arrow">▼</span>
+    </div>
+    <div class="faq-a">テキストが埋め込まれたPDFに最適化されています。スキャンPDFや画像PDFは解析精度が下がる場合があります。デジタルで作成されたレジュメやスライドでの使用を推奨します。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      生成されたヒントをそのまま使っていいですか？
+      <span class="faq-arrow">▼</span>
+    </div>
+    <div class="faq-a">ヒントはあくまで「きっかけ」です。そのまま使うのではなく、自分の言葉でアレンジして使うことを推奨しています。自分の感じた疑問や気づきを出発点に、ヒントを参考にしてみてください。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      どんな授業・科目に向いていますか？
+      <span class="faq-arrow">▼</span>
+    </div>
+    <div class="faq-a">講義形式・演習・ゼミなど幅広く対応しています。特に先生との対話が多いゼミや演習、グループディスカッションがある授業で効果を発揮します。理系・文系問わず使えますが、議論の余地がある人文・社会系の授業と特に相性がよいです。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      無料プランからプレミアムへの切り替え方は？
+      <span class="faq-arrow">▼</span>
+    </div>
+    <div class="faq-a">アプリ内の「プレミアムにアップグレード」ボタンから、いつでも切り替えできます。クレジットカードがあれば1分で完了します。解約もいつでも可能です。</div>
+  </div>
+</section>
+
+<!-- CTA Bottom -->
+<section class="cta-bottom">
+  <h2 class="reveal">今日の授業から、始めてみませんか。</h2>
+  <p class="reveal">レジュメをアップロードするだけ。<br>最初の一言が、ずっと楽になります。</p>
+  <a href="#app" class="btn-primary reveal" style="font-size:16px; padding:16px 40px;">→ 無料で使ってみる</a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="logo">声を出す。</div>
+  <p>© 2025 声を出す。All rights reserved.</p>
+</footer>
+
+<script>
+  // FAQ toggle
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    item.classList.toggle('open');
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
