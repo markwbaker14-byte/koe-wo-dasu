@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://koe-wo-dasu.vercel.app/sitemap.xml
