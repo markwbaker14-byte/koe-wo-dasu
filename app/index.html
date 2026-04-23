@@ -6,6 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="mIGpfy-xPQoxOLzlhSo0B_3Oum2c7x_1MxDHsrwngXM" />
     <title>koe-wo-dasu</title>
+    <!-- Google Analytics 4 -->
+    <script>
+      (function () {
+        var GA_ID = "%VITE_GA_MEASUREMENT_ID%";
+        if (!GA_ID || GA_ID === "%VITE_GA_MEASUREMENT_ID%") return;
+        var s = document.createElement("script");
+        s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { window.dataLayer.push(arguments); };
+        window.gtag("js", new Date());
+        window.gtag("config", GA_ID, {
+          anonymize_ip: true,
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { track, setUserProperty, trackPurchase } from "./lib/analytics";
 
 // ─── デザイントークン ─────────────────────────────────────
 const T = {
@@ -77,6 +78,20 @@ const incrementUsage = async (current) => {
   return next;
 };
 
+// GA4: 無料枠到達イベントの月次重複防止
+const FREE_LIMIT_FIRED_KEY = "lecture-voice:freeLimitFired";
+const hasFiredFreeLimitThisMonth = () => {
+  try {
+    const r = JSON.parse(localStorage.getItem(FREE_LIMIT_FIRED_KEY) || "null");
+    return r?.yearMonth === currentYearMonth();
+  } catch { return false; }
+};
+const markFreeLimitFired = () => {
+  try { localStorage.setItem(FREE_LIMIT_FIRED_KEY, JSON.stringify({ yearMonth: currentYearMonth() })); } catch { /* ignore */ }
+};
+const memoLengthBucket = (n) => (n < 50 ? "<50" : n <= 200 ? "50-200" : ">200");
+const ONBOARDING_SLUGS = ["pdf_upload_intro", "hint_types_intro", "depth_and_history"];
+
 const buildSystemPrompt = (hasMemo, depth, grade, prevSession = null) => {
   const depthObj = DEPTHS.find((d) => d.value === depth) || DEPTHS[1];
   const prev = prevSession ? `\n【前回の授業内容（第${prevSession.sessionNo}回：${prevSession.topic}）】\n「前回学んだ${prevSession.topic}と関連して」「先週の内容を踏まえると」のような形で接続する発言・質問を積極的に生成してください。\n${Object.entries(prevSession.cards).flatMap(([,items]) => items.map((c) => `・${c.text}`)).join("\n")}` : "";
@@ -94,6 +109,7 @@ function CardView({ result, activeType, setActiveType, copied, onCopy, isPremium
   const cards    = result?.[activeType] || [];
 
   const exportTxt = () => {
+    track("export_text_clicked", { tab_name: activeType });
     const tabLabel   = CARD_TYPES[activeType].label;
     const depthLabel = DEPTHS.find((d) => d.value === depth)?.label || "";
     const gradeLabel = GRADES.find((g) => g.value === grade)?.label || "";
@@ -170,7 +186,7 @@ function CardView({ result, activeType, setActiveType, copied, onCopy, isPremium
       {/* タブ */}
       <div style={{ display:"flex", background:T.surfaceAlt, borderRadius:T.radiusSm, padding:"4px", gap:"3px", marginBottom:"16px" }}>
         {Object.entries(CARD_TYPES).map(([key,val]) => (
-          <button key={key} onClick={() => setActiveType(key)}
+          <button key={key} onClick={() => { if (activeType !== key) track("hint_tab_switched", { tab_name: key }); setActiveType(key); }}
             style={{ flex:1, padding:"8px 4px", border:"none", borderRadius:"8px", fontSize:"13px", fontFamily:"inherit", cursor:"pointer", transition:"all 0.15s", fontWeight: activeType===key ? "500":"400", background: activeType===key ? T.surface:"transparent", color: activeType===key ? CARD_TYPES[key].accent:T.textSub, boxShadow: activeType===key ? "0 1px 4px rgba(0,0,0,0.1)":"none" }}>
             {val.icon} {val.label}
           </button>
@@ -279,12 +295,38 @@ export default function App() {
   const [editingName, setEditingName]     = useState("");
   const [expandedSubjs, setExpandedSubjs] = useState({});
   const fileRef = useRef();
+  const prevLectureRefActive = useRef(false);
 
   useEffect(() => {
     loadSubjects().then((s) => { setSubjects(s); setSubjLoaded(true); });
     loadUsage().then((u) => { setUsage(u); setUsageLoaded(true); });
     loadOnboarded().then((done) => { if (!done) setShowOnboarding(true); });
   }, []);
+
+  // GA4 user properties — initial sync + on change
+  useEffect(() => { setUserProperty("is_premium", isPremium ? "true" : "false"); }, [isPremium]);
+  useEffect(() => { setUserProperty("grade_level", grade); }, [grade]);
+  useEffect(() => { setUserProperty("depth_preference", depth); }, [depth]);
+  useEffect(() => { setUserProperty("subject_count", subjects.length); }, [subjects.length]);
+
+  // GA4 onboarding step viewed
+  useEffect(() => {
+    if (showOnboarding) {
+      track("onboarding_step_viewed", {
+        step_index: onboardStep,
+        step_name: ONBOARDING_SLUGS[onboardStep] || "unknown",
+      });
+    }
+  }, [showOnboarding, onboardStep]);
+
+  // GA4 previous_lecture_referenced — fire only when (useRef_ && refSessId) flips to true
+  useEffect(() => {
+    const isActive = useRef_ && !!refSessId;
+    if (isActive && !prevLectureRefActive.current) {
+      track("previous_lecture_referenced");
+    }
+    prevLectureRefActive.current = isActive;
+  }, [useRef_, refSessId]);
 
   const getRefSession = () => {
     if (!useRef_ || !refSubjId || !refSessId) return null;
@@ -320,12 +362,14 @@ export default function App() {
   };
 
   const analyze = async (file) => {
-    // 無料枠チェック
+    // 無料枠チェック（click/drop ハンドラで先に止まるが念のため二重防御）
     if (!isPremium && usage.count >= FREE_LIMIT) {
       setError(`今月の無料枠（${FREE_LIMIT}回）を使い切りました。プレミアムにアップグレードすると無制限で使えます。`);
       return;
     }
     setStep("loading"); setError(""); setHistoryView(null);
+    const startedAt = performance.now();
+    track("analysis_started", { depth, grade, has_memo: !!memo, has_reference: !!getRefSession() });
     try {
       const base64 = await new Promise((res,rej) => { const r=new FileReader(); r.onload=(e)=>res(e.target.result.split(",")[1]); r.onerror=rej; r.readAsDataURL(file); });
       setPdfBase64(base64);
@@ -333,15 +377,26 @@ export default function App() {
       // 成功したらカウントを増やす
       const nextUsage = await incrementUsage(usage);
       setUsage(nextUsage);
+      // 無料枠到達検知（月一度のみ）
+      if (!isPremium && nextUsage.count >= FREE_LIMIT && !hasFiredFreeLimitThisMonth()) {
+        track("free_limit_reached");
+        markFreeLimitFired();
+      }
       setResult(parsed); setMemo(""); setMemoInput(""); setCopied({});
       setNewSubjName(parsed.subjectName||""); setSaveTargetSubjId("__new__");
       setStep("result");
-    } catch(err) { handleError(err,setError); setStep("upload"); }
+      track("analysis_succeeded", { depth, grade, duration_ms: Math.round(performance.now() - startedAt) });
+    } catch(err) {
+      const errorType = (err.message || "").split(":")[0] || "UNKNOWN";
+      track("analysis_failed", { error_type: errorType });
+      handleError(err,setError); setStep("upload");
+    }
   };
 
   const applyMemo = async () => {
     if (!memoInput.trim()||!pdfBase64) return;
     setMemoLoading(true); setMemoError("");
+    track("memo_applied", { memo_length_chars: memoLengthBucket(memoInput.length) });
     try {
       const parsed = await callAPI(pdfBase64,memoInput,depth,grade,getRefSession());
       setResult(parsed); setMemo(memoInput); setMemoInput(""); setCopied({});
@@ -359,13 +414,16 @@ export default function App() {
   const confirmSave = async () => {
     if (!result) return;
     let updated=[...subjects]; let target;
-    if (saveTargetSubjId==="__new__") {
+    const isNewSubject = saveTargetSubjId === "__new__";
+    if (isNewSubject) {
       target={ id:`subj-${Date.now()}`, name:newSubjName.trim()||result.subjectName||"未分類", sessions:[] };
       updated=[target,...updated];
     } else { target=updated.find((s)=>s.id===saveTargetSubjId); if(!target) return; }
     const sess={ id:`sess-${Date.now()}`, sessionNo:target.sessions.length+1, topic:result.topic, savedAt:new Date().toLocaleDateString("ja-JP"), depth, grade, cards:{ question:result.question||[], comment:result.comment||[], deepdive:result.deepdive||[] } };
     updated=updated.map((s)=>s.id===target.id?{...s,sessions:[...s.sessions,sess]}:s);
     setSubjects(updated); await saveSubjects(updated);
+    if (isNewSubject) track("subject_created");
+    track("lecture_saved", { subject_count: updated.length });
     setShowSaveModal(false); setSavedMsg(true); setTimeout(()=>setSavedMsg(false),2500);
     // 新規科目なら展開
     setExpandedSubjs((p)=>({...p,[target.id]:true}));
@@ -387,13 +445,24 @@ export default function App() {
   const handleFile = (file) => {
     if(!file||file.type!=="application/pdf"){setError("PDFファイルを選択してください。");return;}
     if(file.size>10*1024*1024){setError("ファイルサイズが大きすぎます。10MB以内のPDFをお試しください。");return;}
+    track("pdf_uploaded", { file_size_kb: Math.round(file.size / 1024) });
     setFileName(file.name); analyze(file);
   };
 
-  const onDrop = useCallback((e)=>{e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0]);},[depth,grade,useRef_,refSubjId,refSessId]);
+  const onDrop = useCallback((e) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (!isPremium && usage.count >= FREE_LIMIT) {
+      track("pdf_upload_blocked", { reason: "free_limit_reached" });
+      return;
+    }
+    track("pdf_upload_attempted", { source: "drag" });
+    handleFile(e.dataTransfer.files[0]);
+  }, [depth,grade,useRef_,refSubjId,refSessId,isPremium,usage.count]);
 
   const copyCard = (text,key) => {
     navigator.clipboard.writeText(text).then(()=>{ setCopied((p)=>({...p,[key]:true})); setTimeout(()=>setCopied((p)=>({...p,[key]:false})),2000); });
+    track("hint_copied", { hint_type: key.split("-")[0] });
   };
 
   const toggleSubj = (id) => setExpandedSubjs((p)=>({...p,[id]:!p[id]}));
@@ -431,7 +500,7 @@ export default function App() {
         {isPremium ? (
           <div style={{ padding:"7px 12px", borderRadius:T.radiusSm, background:"rgba(108,92,231,0.25)", color:T.purpleLight, fontSize:"12px", fontWeight:"500", textAlign:"center" }}>★ プレミアム会員</div>
         ) : (
-          <button onClick={()=>setShowUpgradeModal(true)} style={{ width:"100%", padding:"7px 0", borderRadius:T.radiusSm, background:"rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.6)", border:"1px solid rgba(255,255,255,0.12)", fontFamily:"inherit", fontSize:"12px", cursor:"pointer" }}>
+          <button onClick={()=>{ track("premium_modal_opened", { trigger: "header_button" }); setShowUpgradeModal(true); }} style={{ width:"100%", padding:"7px 0", borderRadius:T.radiusSm, background:"rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.6)", border:"1px solid rgba(255,255,255,0.12)", fontFamily:"inherit", fontSize:"12px", cursor:"pointer" }}>
             ★ プレミアムにアップグレード
           </button>
         )}
@@ -631,7 +700,12 @@ export default function App() {
     },
   ];
 
-  const closeOnboarding = async () => {
+  const closeOnboarding = async (completed = false) => {
+    if (completed) {
+      track("onboarding_completed");
+    } else {
+      track("onboarding_skipped", { skipped_at_step: onboardStep });
+    }
     await markOnboarded();
     setShowOnboarding(false);
     setOnboardStep(0);
@@ -664,7 +738,7 @@ export default function App() {
 
             {/* ナビゲーション */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:"24px" }}>
-              <button onClick={closeOnboarding}
+              <button onClick={() => closeOnboarding(false)}
                 style={{ background:"transparent", border:"none", color:T.textHint, fontSize:"12px", cursor:"pointer", fontFamily:"inherit", padding:"4px 0" }}>
                 スキップ
               </button>
@@ -675,7 +749,7 @@ export default function App() {
                 ))}
               </div>
               <button
-                onClick={() => { if (isLast) { closeOnboarding(); } else { setOnboardStep((s) => s + 1); } }}
+                onClick={() => { if (isLast) { closeOnboarding(true); } else { setOnboardStep((s) => s + 1); } }}
                 style={{ padding:"9px 20px", borderRadius:T.radiusSm, background:T.purple, color:"#fff", border:"none", fontSize:"13px", fontWeight:"500", cursor:"pointer", fontFamily:"inherit" }}>
                 {isLast ? "始める →" : "次へ →"}
               </button>
@@ -745,7 +819,8 @@ export default function App() {
           </div>
 
           {/* CTAボタン */}
-          <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer"
+          <a href={PAYMENT_LINK} target="_blank" rel="noopener noreferrer"
+            onClick={() => track("premium_stripe_clicked")}
             style={{ display:"block", width:"100%", padding:"14px", borderRadius:T.radiusSm, background:T.purple, color:"#fff", fontFamily:"inherit", fontSize:"14px", fontWeight:"600", textAlign:"center", textDecoration:"none", boxSizing:"border-box", transition:"background 0.2s" }}
             onMouseOver={(e)=>e.currentTarget.style.background="#8B7CF0"}
             onMouseOut={(e)=>e.currentTarget.style.background=T.purple}>
@@ -756,8 +831,13 @@ export default function App() {
             決済完了後、サポートまでご連絡ください。
           </p>
 
-          {/* デモ用：開発中のフラグ切り替えボタン */}
-          <button onClick={()=>{ setIsPremium(true); setShowUpgradeModal(false); }}
+          {/* デモ用：開発中のフラグ切り替えボタン（決済完了の代用） */}
+          <button onClick={()=>{
+              track("premium_marked_purchased");
+              trackPurchase({ transactionId: crypto.randomUUID() });
+              setIsPremium(true);
+              setShowUpgradeModal(false);
+            }}
             style={{ width:"100%", marginTop:"8px", padding:"8px", borderRadius:T.radiusSm, background:"transparent", border:`1px dashed ${T.border}`, color:T.textHint, fontSize:"11px", cursor:"pointer", fontFamily:"inherit" }}>
             ※ デモ：プレミアムを有効化（開発用）
           </button>
@@ -834,7 +914,7 @@ export default function App() {
           </div>
           <CardView
             result={histResult} activeType={activeType} setActiveType={setActiveType}
-            copied={copied} onCopy={copyCard} isPremium={isPremium} onUpgrade={()=>setShowUpgradeModal(true)}
+            copied={copied} onCopy={copyCard} isPremium={isPremium} onUpgrade={()=>{ track("premium_modal_opened", { trigger: "feature_lock" }); setShowUpgradeModal(true); }}
             memo="" useRef_={false} refSessId="" refSubj={null} refSess={null}
             savedMsg={false} onSave={()=>{}} onNewFile={()=>{}}
             depth={histSess.depth} grade={histSess.grade}
@@ -891,13 +971,20 @@ export default function App() {
             <div style={{ fontSize:"13px", color:"#7A2020", marginBottom:"14px", lineHeight:"1.6" }}>
               プレミアムにアップグレードすると、来月を待たずに今すぐ続けられます。
             </div>
-            <button onClick={()=>setShowUpgradeModal(true)} style={btnP({ fontSize:"13px" })}>
+            <button onClick={()=>{ track("premium_modal_opened", { trigger: "limit_banner" }); setShowUpgradeModal(true); }} style={btnP({ fontSize:"13px" })}>
               ★ プレミアムにアップグレード（¥980/月）
             </button>
           </div>
         )}
 
-        <div onClick={()=>{ if(!isPremium && usage.count >= FREE_LIMIT) return; fileRef.current.click(); }}
+        <div onClick={()=>{
+            if(!isPremium && usage.count >= FREE_LIMIT) {
+              track("pdf_upload_blocked", { reason: "free_limit_reached" });
+              return;
+            }
+            track("pdf_upload_attempted", { source: "click" });
+            fileRef.current.click();
+          }}
           onDragOver={(e)=>{ if(!isPremium && usage.count >= FREE_LIMIT) return; e.preventDefault(); setDragOver(true); }}
           onDragLeave={()=>setDragOver(false)} onDrop={onDrop}
           style={{
@@ -944,7 +1031,7 @@ export default function App() {
       <div style={{ padding:"24px" }}>
         <CardView
           result={result} activeType={activeType} setActiveType={setActiveType}
-          copied={copied} onCopy={copyCard} isPremium={isPremium} onUpgrade={()=>setShowUpgradeModal(true)}
+          copied={copied} onCopy={copyCard} isPremium={isPremium} onUpgrade={()=>{ track("premium_modal_opened", { trigger: "feature_lock" }); setShowUpgradeModal(true); }}
           memo={memo} useRef_={useRef_} refSessId={refSessId} refSubj={refSubj} refSess={refSess}
           savedMsg={savedMsg} onSave={()=>setShowSaveModal(true)} onNewFile={()=>{setStep("upload");setResult(null);setFileName("");setPdfBase64(null);setCopied({});setHistoryView(null);}}
           depth={depth} grade={grade} setDepth={setDepth} setGrade={setGrade} onRegen={regenerate}
