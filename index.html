@@ -13,7 +13,7 @@
 <script>
   (function () {
     var GA_ID = "%VITE_GA_MEASUREMENT_ID%";
-    if (!GA_ID || GA_ID === "%VITE_GA_MEASUREMENT_ID%") return;
+    if (!GA_ID || GA_ID.charAt(0) !== "G") return;
     var s = document.createElement("script");
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
