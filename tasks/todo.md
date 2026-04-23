@@ -33,6 +33,29 @@ sequences, and verifies the work that Cowork drives.
 
 ---
 
+## P0 — API Key Security Fix (DO IMMEDIATELY, blocks Phase B)
+
+The Anthropic API key has been exposed in the production JS bundle
+since launch. Spec drafted 2026-04-23 at `specs/api-key-security-fix.md`.
+Spend cap is set on Anthropic console (confirmed 2026-04-23) which
+bounds the blast radius until the fix lands.
+
+- [x] Mark confirmed Anthropic usage is normal (no past abuse)
+- [x] Mark confirmed monthly spend cap is set
+- [x] Spec drafted with full Vercel Function proxy + key rotation
+      procedure (`specs/api-key-security-fix.md`, 12 sections)
+- [ ] **Send Claude Code handoff prompt** (spec §12) to implement
+      proxy + lib/api.js refactor + App.jsx cleanup
+- [ ] **Mark to run §7 Step B–E** after Claude Code commit lands:
+      Vercel env var setup → verify → key rotation → revoke old key
+      → cleanup
+- [ ] Verification per spec §8 (8 checks including DevTools source
+      scan for `sk-ant-`)
+- [ ] Update `CLAUDE.md` to reflect new architecture
+- [ ] **Phase B (app redesign) blocked until this fix completes**
+
+---
+
 ## Phase 1 — Pre-Monetization Foundation (HIGH priority, blocking Stripe)
 
 > **Tokushoho display page** (`legal/tokushoho-ja.md`) drafted 2026-04-23.
@@ -204,10 +227,15 @@ sequences, and verifies the work that Cowork drives.
 - [ ] Set up Slack/email alerts for production errors
 
 ### 10. Backend Migration (Mid-term, after first 50 paid users)
-- [ ] Move Anthropic API calls server-side (kill key exposure)
+- [~] ~~Move Anthropic API calls server-side (kill key exposure)~~
+      → **promoted to P0**, see top of this file
 - [ ] Stripe Webhook for subscription state (premium = server-verified)
 - [ ] Authentication (Magic link or OAuth)
 - [ ] Cross-device data sync to replace localStorage-only model
+- [ ] Rate limiting at the function level (Upstash Redis recommended,
+      see `specs/api-key-security-fix.md` §10)
+- [ ] Move FREE_LIMIT enforcement server-side (currently localStorage,
+      easily bypassed)
 - [ ] This is a substantial engineering effort — separate planning doc when ready
 
 ---
