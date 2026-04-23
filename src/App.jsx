@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { track, setUserProperty, trackPurchase } from "./lib/analytics";
+import { callAPI } from "./lib/api";
 
 // ─── デザイントークン ─────────────────────────────────────
 const T = {
@@ -28,9 +29,9 @@ const CARD_TYPES = {
 };
 
 const DEPTHS = [
-  { value: "surface",  label: "授業内",   desc: "資料の内容だけに絞った安全な質問・発言",       instruction: "・資料に書かれている内容の範囲内だけで質問・発言を作ること\n・先生の個人的な経験・意見・私生活には一切触れないこと\n・「この図の意味は？」「この用語の定義は？」など授業の理解を深める問いに絞ること" },
-  { value: "applied",  label: "応用・社会", desc: "時事・他分野・実社会との接続に踏み込む",     instruction: "・授業内容を現実社会・時事問題・他の授業と結びつける質問・発言を含めること\n・「これは〇〇の問題とどう関係しますか」など応用的な問いを優先すること\n・先生の専門的見解を引き出す質問も含めてよいが、私生活には踏み込まないこと" },
-  { value: "personal", label: "個人的",   desc: "先生の経験・研究背景・私見を引き出す",        instruction: "・先生自身の研究背景・実体験・個人的な見解を引き出す質問を積極的に含めること\n・「先生はこのテーマをどう思いますか」など先生との距離を縮める問いを優先すること\n・授業後や廊下での会話のきっかけにもなるような、先生に「覚えてもらえる」発言を意識すること" },
+  { value: "surface",  label: "授業内",   desc: "資料の内容だけに絞った安全な質問・発言" },
+  { value: "applied",  label: "応用・社会", desc: "時事・他分野・実社会との接続に踏み込む" },
+  { value: "personal", label: "個人的",   desc: "先生の経験・研究背景・私見を引き出す" },
 ];
 
 const GRADES = [
@@ -38,12 +39,6 @@ const GRADES = [
   { value: "senior",   label: "学部3・4年" },
   { value: "grad",     label: "大学院生" },
 ];
-
-const GRADE_INSTRUCTIONS = {
-  freshman: "・専門用語は避け、平易な言葉で表現すること\n・内容への理解を深めようとする素直な疑問を優先すること",
-  senior:   "・ある程度の専門知識を前提にした問いを含めること\n・実社会や他の授業との接続を意識した発言を含めること",
-  grad:     "・先行研究や理論的背景に踏み込んだ問いを含めること\n・批判的・分析的な視点からの発言を積極的に含めること",
-};
 
 const STORAGE_KEY      = "lecture-voice:subjects-v2";
 const USAGE_KEY        = "lecture-voice:usage";
@@ -91,12 +86,6 @@ const markFreeLimitFired = () => {
 };
 const memoLengthBucket = (n) => (n < 50 ? "<50" : n <= 200 ? "50-200" : ">200");
 const ONBOARDING_SLUGS = ["pdf_upload_intro", "hint_types_intro", "depth_and_history"];
-
-const buildSystemPrompt = (hasMemo, depth, grade, prevSession = null) => {
-  const depthObj = DEPTHS.find((d) => d.value === depth) || DEPTHS[1];
-  const prev = prevSession ? `\n【前回の授業内容（第${prevSession.sessionNo}回：${prevSession.topic}）】\n「前回学んだ${prevSession.topic}と関連して」「先週の内容を踏まえると」のような形で接続する発言・質問を積極的に生成してください。\n${Object.entries(prevSession.cards).flatMap(([,items]) => items.map((c) => `・${c.text}`)).join("\n")}` : "";
-  return `あなたは大学の授業における対話促進の専門家です。日本の大学では学生が発言を躊躇することが多いという課題があります。\n\n提供された授業資料${hasMemo ? "と講義中のメモ" : ""}を読み、学生が授業中に使えるヒントを以下の3カテゴリでそれぞれ3〜4個生成してください。\n${hasMemo ? "講義メモがある場合は優先的に反映してください。\n" : ""}必ずJSON形式のみで返答してください。前置き不要。\n\n{\n  "topic": "この資料の授業トピック（20字以内）",\n  "subjectName": "授業科目名の推定（10〜15字以内）",\n  "question": [{ "text": "先生に聞ける質問文（自然な口語で）", "hint": "なぜこれを聞くと良いか（30字以内）" }],\n  "comment": [{ "text": "授業中に言える発言例（自然な口語で）", "hint": "どんな効果があるか（30字以内）" }],\n  "deepdive": [{ "text": "議論を深める問いかけや視点（自然な口語で）", "hint": "どんな議論が生まれるか（30字以内）" }]\n}\n${prev}\n【踏み込み度：${depthObj.label}】\n${depthObj.instruction}\n\n【対象学年】\n${GRADE_INSTRUCTIONS[grade]}`;
-};
 
 // ─── スタイルヘルパー ─────────────────────────────────────
 const btn  = (x={}) => ({ fontFamily:"inherit", cursor:"pointer", borderRadius:T.radiusSm, fontSize:"13px", padding:"7px 16px", border:`1px solid ${T.border}`, background:T.surface, color:T.text, transition:"all 0.15s", ...x });
@@ -331,26 +320,6 @@ export default function App() {
   const getRefSession = () => {
     if (!useRef_ || !refSubjId || !refSessId) return null;
     return subjects.find((s) => s.id === refSubjId)?.sessions.find((s) => s.id === refSessId) || null;
-  };
-
-  const callAPI = async (base64, extraMemo="", d=depth, g=grade, prevSess=null) => {
-    const hasMemo = extraMemo.trim().length > 0;
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST", headers:{"Content-Type":"application/json","x-api-key":import.meta.env.VITE_ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-20250514", max_tokens:2000,
-        system: buildSystemPrompt(hasMemo,d,g,prevSess),
-        messages:[{ role:"user", content:[
-          { type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } },
-          { type:"text", text: hasMemo ? `この授業資料を分析して学生向けの発言ヒントを生成してください。\n\n【講義メモ】\n${extraMemo}` : "この授業資料を分析して学生向けの発言ヒントを生成してください。" },
-        ]}],
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(`API_ERROR: ${data.error?.message||res.status}`);
-    const text = data.content?.find((b)=>b.type==="text")?.text||"";
-    if (!text.trim()) throw new Error("EMPTY_RESPONSE");
-    try { return JSON.parse(text.replace(/```json|```/g,"").trim()); } catch { throw new Error("PARSE_ERROR"); }
   };
 
   const handleError = (err, setter) => {
