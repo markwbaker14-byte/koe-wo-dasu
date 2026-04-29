@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { track, setUserProperty } from "./lib/analytics";
+import { track, setUserProperty, trackPurchase } from "./lib/analytics";
 import { callAPI } from "./lib/api";
 import { FREE_LIMIT } from "./lib/constants";
 import {
   hasFiredFreeLimitThisMonth,
   incrementUsage,
   loadOnboarded,
+  loadPremium,
   loadSubjects,
   loadUsage,
   markFreeLimitFired,
+  savePremium,
   saveSubjects,
   currentYearMonth,
 } from "./lib/storage";
@@ -84,10 +86,23 @@ export default function App() {
     loadSubjects().then((s) => { setSubjects(s); setSubjLoaded(true); });
     loadUsage().then((u) => { setUsage(u); setUsageLoaded(true); });
     loadOnboarded().then((done) => { if (!done) setShowOnboarding(true); });
+    loadPremium().then((p) => { if (p) setIsPremium(true); });
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.get("devmode") === "1") setDevMode(true);
     } catch { /* ignore */ }
+  }, []);
+
+  // post-purchase: detect ?premium=success from Stripe redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("premium") === "success") {
+      savePremium(true);
+      setIsPremium(true);
+      trackPurchase({ transactionId: crypto.randomUUID(), value: 980, currency: "JPY" });
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, "", cleanUrl);
+    }
   }, []);
 
   // GA4 user properties

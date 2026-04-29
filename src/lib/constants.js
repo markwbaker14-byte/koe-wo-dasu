@@ -2,6 +2,7 @@ export const STORAGE_KEY = "lecture-voice:subjects-v2";
 export const USAGE_KEY = "lecture-voice:usage";
 export const ONBOARD_KEY = "lecture-voice:onboarded";
 export const FREE_LIMIT_FIRED_KEY = "lecture-voice:freeLimitFired";
+export const PREMIUM_KEY = "lecture-voice:premium";
 export const FREE_LIMIT = 5;
 
 export const PAYMENT_LINK = "https://buy.stripe.com/test_8x2cMY7VzfEIc1D4aP18c00";

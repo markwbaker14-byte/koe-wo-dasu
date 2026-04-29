@@ -3,6 +3,7 @@ import {
   USAGE_KEY,
   ONBOARD_KEY,
   FREE_LIMIT_FIRED_KEY,
+  PREMIUM_KEY,
 } from "./constants";
 
 export const currentYearMonth = () => {
@@ -44,6 +45,26 @@ export const loadOnboarded = async () => {
 export const markOnboarded = async () => {
   try { localStorage.setItem(ONBOARD_KEY, "true"); } catch { /* ignore */ }
 };
+
+export async function loadPremium() {
+  try {
+    return localStorage.getItem(PREMIUM_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export async function savePremium(value) {
+  try {
+    if (value) {
+      localStorage.setItem(PREMIUM_KEY, "true");
+    } else {
+      localStorage.removeItem(PREMIUM_KEY);
+    }
+  } catch {
+    /* ignore quota / privacy mode */
+  }
+}
 
 export const hasFiredFreeLimitThisMonth = () => {
   try {
