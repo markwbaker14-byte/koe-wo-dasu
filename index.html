@@ -328,8 +328,8 @@ footer { background: var(--bg-dark); border-top: 1px solid oklch(22% 0.01 260); 
     <li><a href="#features">機能</a></li>
     <li><a href="#pricing">料金</a></li>
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="/app/">アプリを開く</a></li>
-    <li><a href="#pricing" class="btn btn-primary" style="padding:9px 20px;font-size:13px;">無料で始める</a></li>
+    <li><a href="/app/" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'nav_app' });">アプリを開く</a></li>
+    <li><a href="#pricing" class="btn btn-primary" style="padding:9px 20px;font-size:13px;" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'nav_signup' });">無料で始める</a></li>
   </ul>
 </nav>
 
@@ -340,8 +340,8 @@ footer { background: var(--bg-dark); border-top: 1px solid oklch(22% 0.01 260); 
       <h1 class="hero-title reveal reveal-delay-1">「何か言いたい」<br><em>その気持ち、<br>言葉にしよう。</em></h1>
       <p class="hero-sub reveal reveal-delay-2">授業のレジュメをアップロードするだけ。<br>質問・発言・深掘りのヒントをAIがその場で生成します。</p>
       <div class="hero-actions reveal reveal-delay-3">
-        <a href="/app/" class="btn btn-primary btn-lg">→ 無料で使ってみる</a>
-        <a href="#features" class="btn btn-outline btn-lg">機能を見る</a>
+        <a href="/app/" class="btn btn-primary btn-lg" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'hero_primary' });">→ 無料で使ってみる</a>
+        <a href="#features" class="btn btn-outline btn-lg" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'hero_features' });">機能を見る</a>
       </div>
       <div class="hero-social-proof reveal reveal-delay-4">
         <div class="hero-avatars"><span>😊</span><span>📚</span><span>🎓</span><span>✨</span></div>
@@ -511,7 +511,7 @@ footer { background: var(--bg-dark); border-top: 1px solid oklch(22% 0.01 260); 
           <li><span class="cross">–</span> <span style="color:var(--text-light)">前回の授業を参照して生成</span></li>
           <li><span class="cross">–</span> <span style="color:var(--text-light)">科目・回ごとの保存（無制限）</span></li>
         </ul>
-        <a href="/app/" class="btn btn-outline" style="width:100%;justify-content:center;">無料で始める</a>
+        <a href="/app/" class="btn btn-outline" style="width:100%;justify-content:center;" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'pricing_free' });">無料で始める</a>
       </div>
       <div class="price-card recommended reveal reveal-delay-2">
         <div class="price-badge">おすすめ</div>
@@ -525,7 +525,7 @@ footer { background: var(--bg-dark); border-top: 1px solid oklch(22% 0.01 260); 
           <li><span class="check">✓</span> 科目・回ごとの保存（無制限）</li>
           <li><span class="check">✓</span> 優先サポート</li>
         </ul>
-        <a href="/app/" class="btn btn-primary" style="width:100%;justify-content:center;">¥980 / 月で始める</a>
+        <a href="/app/" class="btn btn-primary" style="width:100%;justify-content:center;" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'pricing_premium' });">¥980 / 月で始める</a>
       </div>
     </div>
     <p class="price-note reveal">解約はいつでも · データはすぐ削除 · 学生割引を検討中</p>
@@ -567,7 +567,7 @@ footer { background: var(--bg-dark); border-top: 1px solid oklch(22% 0.01 260); 
   <div class="container" style="text-align:center;">
     <h2 class="cta-title reveal">今日の授業から、<br><span>始めてみませんか。</span></h2>
     <p class="cta-sub reveal reveal-delay-1">レジュメをアップロードするだけ。<br>最初の一言が、ずっと楽になります。</p>
-    <a href="/app/" class="btn btn-primary btn-lg reveal reveal-delay-2">→ 無料で使ってみる</a>
+    <a href="/app/" class="btn btn-primary btn-lg reveal reveal-delay-2" onclick="window.gtag && gtag('event', 'landing_cta_clicked', { cta_location: 'bottom_cta' });">→ 無料で使ってみる</a>
     <p class="cta-note reveal reveal-delay-3">クレジットカード不要 · 月5回まで無料</p>
   </div>
 </section>
