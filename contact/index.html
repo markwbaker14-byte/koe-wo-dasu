@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Google Search Console -->
+<meta name="google-site-verification" content="mIGpfy-xPQoxOLzlhSo0B_3Oum2c7x_1MxDHsrwngXM" />
+
+<title>お問い合わせ — 声を出す。</title>
+
+<!-- Google Analytics 4 -->
+<script>
+  (function () {
+    var GA_ID = "%VITE_GA_MEASUREMENT_ID%";
+    if (!GA_ID || GA_ID.charAt(0) !== "G") return;
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", GA_ID, {
+      anonymize_ip: true,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
+    });
+  })();
+</script>
+
+<!-- SEO -->
+<meta name="description" content="『声を出す。』に関するお問い合わせ窓口。サービスの使い方、不具合報告、プレミアムプラン、その他ご質問をお寄せください。">
+<meta name="author" content="声を出す。">
+<link rel="canonical" href="https://koe-wo-dasu.vercel.app/contact/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://koe-wo-dasu.vercel.app/contact/">
+<meta property="og:title" content="お問い合わせ — 声を出す。">
+<meta property="og:description" content="『声を出す。』に関するお問い合わせ窓口。サービスの使い方、不具合報告、プレミアムプラン、その他ご質問をお寄せください。">
+<meta property="og:site_name" content="声を出す。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://koe-wo-dasu.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="声を出す。— 授業のレジュメから、あなたの言葉を">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://koe-wo-dasu.vercel.app/contact/">
+<meta name="twitter:title" content="お問い合わせ — 声を出す。">
+<meta name="twitter:description" content="『声を出す。』に関するお問い合わせ窓口。サービスの使い方、不具合報告、プレミアムプラン、その他ご質問をお寄せください。">
+<meta name="twitter:image" content="https://koe-wo-dasu.vercel.app/og-image.png">
+<meta name="twitter:image:alt" content="声を出す。— 授業のレジュメから、あなたの言葉を">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: oklch(98.5% 0.008 75);
+  --bg-warm: oklch(96.5% 0.012 75);
+  --bg-dark: oklch(14% 0.015 260);
+  --text: oklch(16% 0.012 260);
+  --text-mid: oklch(45% 0.01 260);
+  --text-light: oklch(62% 0.008 260);
+  --accent: oklch(65% 0.19 35);
+  --accent-dark: oklch(52% 0.19 35);
+  --border: oklch(88% 0.01 75);
+  --radius: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nav */
+nav {
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  height: 64px;
+  background: oklch(98.5% 0.008 75 / 0.95);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--accent); }
+
+/* Main */
+main {
+  flex: 1;
+  padding: 64px 32px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.page-sub {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.8;
+  margin-bottom: 40px;
+}
+
+.form-wrap {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.privacy-note {
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.privacy-note a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.privacy-note a:hover { text-decoration: underline; }
+
+/* Footer */
+footer {
+  background: var(--bg-dark);
+  border-top: 1px solid oklch(22% 0.01 260);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-logo { font-size: 16px; font-weight: 900; color: white; letter-spacing: -0.02em; }
+.footer-logo span { color: var(--accent); }
+.footer-copy { font-size: 12px; color: oklch(45% 0.007 260); }
+
+@media (max-width: 768px) {
+  main { padding: 40px 20px; }
+  nav { padding: 0 20px; }
+  footer { flex-direction: column; gap: 8px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">声を出す<span>。</span></a>
+</nav>
+
+<main>
+  <h1 class="page-title">お問い合わせ</h1>
+  <p class="page-sub">サービスへのご質問・ご要望は下記フォームからお送りください。通常 2 営業日以内にご返信いたします。</p>
+
+  <div class="form-wrap">
+    <iframe
+      data-tally-src="https://tally.so/embed/5B8z7E?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+      loading="lazy"
+      width="100%"
+      height="800"
+      frameborder="0"
+      marginheight="0"
+      marginwidth="0"
+      title="声を出す。お問い合わせフォーム"
+      style="display:block;"
+    ></iframe>
+  </div>
+
+  <p class="privacy-note">お送りいただいた情報は、お問い合わせ対応の目的にのみ使用します。詳しくは<a href="/privacy/">プライバシーポリシー</a>をご参照ください。</p>
+</main>
+
+<footer>
+  <div class="footer-logo">声を出す<span>。</span></div>
+  <div class="footer-copy">© 2026 Mark Baker Studio / 声を出す。All rights reserved.</div>
+</footer>
+
+<script src="https://tally.so/widgets/embed.js"></script>
+</body>
+</html>

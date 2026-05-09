@@ -2,6 +2,26 @@
 // Hides the API key, validates origin/method/body, returns parsed JSON.
 // See specs/api-key-security-fix.md §4 for rationale.
 
+import * as Sentry from '@sentry/node';
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.VERCEL_ENV || 'development',
+    tracesSampleRate: 0.1,
+    beforeSend(event) {
+      if (event.request?.data) {
+        const data = event.request.data;
+        if (typeof data === 'object') {
+          if (data.pdfBase64) data.pdfBase64 = '[REDACTED]';
+          if (data.memo) data.memo = '[REDACTED]';
+        }
+      }
+      return event;
+    },
+  });
+}
+
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-4-20250514";
 const MAX_TOKENS = 2000;

@@ -67,6 +67,7 @@ export default function Sidebar({
 
       <div className="sidebar-footer">
         <a href="/" className="sidebar-footer-link">← ランディングページ</a>
+        <a href="/contact/" className="sidebar-footer-link">お問い合わせ</a>
       </div>
     </aside>
   );
