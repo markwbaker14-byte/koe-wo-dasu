@@ -1,16 +1,47 @@
-# React + Vite
+# 声を出す。(Koe wo Dasu)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+講義PDFをアップロードすると、Claude API が「先生に聞ける**質問**」「言える**発言**」「議論を深める**問い**」の
+3種類の発言ヒントを日本語で生成する、大学生向けの SaaS Web アプリです。
 
-Currently, two official plugins are available:
+🔗 Live: https://koe-wo-dasu.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 解決する課題
 
-## React Compiler
+日本の大学では「授業中に発言したいが、何をどう言えばいいか分からず躊躇してしまう」学生が多くいます。
+本アプリは講義資料（PDF）を解析し、具体的な口語の発言案を提示することで、発言の心理的ハードルを下げます。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 学年（1年 / 上級生 / 院生）と踏み込み度（授業内 / 応用・社会 / 個人的）を選択可能
+- 前回授業との接続や、自分の講義メモの反映にも対応
 
-## Expanding the ESLint configuration
+## 使用技術
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **フロントエンド**: React 19 + Vite 8（`/` にランディング、`/app/` にアプリのデュアルエントリ構成）
+- **バックエンド**: Vercel Serverless Function が Claude API（Messages API）へのプロキシを担当。
+  PDF は base64 の document ブロックとして送信。**APIキーはサーバー側のみで保持し、ブラウザに露出させない**
+- **状態管理**: localStorage（サーバーDBなし）
+- **計測 / 監視**: GA4（同意バナー連動・anonymize_ip）、Sentry（個人情報スクラブ）
+
+## AI支援開発について（このプロジェクトの肝）
+
+「仕様書ファースト」の開発フローで構築しました。`CLAUDE.md` とプロジェクト設計、`specs/` 配下の詳細仕様書
+（実装手順・変更ファイル表・検証チェックリスト・コピペ用の Claude Code 指示文）を整備し、
+**設計判断は人間 → 仕様に落とす → Claude Code で実装 → チェックリストで検証**という反復プロセスを回しています。
+
+代表例が `specs/api-key-security-fix.md`：APIキーが本番 JS バンドルに露出していたインシデントに対し、
+(1) Anthropic 呼び出しをブラウザから Vercel Function へ移すアーキテクチャ変更、(2) キーのローテーション、
+(3) デプロイ順序までを仕様化し、Claude Code に実装させました（コミット履歴から一連の流れが追えます）。
+
+## 開発
+
+```bash
+npm install
+npm run dev      # Vite dev server
+npm run build    # 本番ビルド
+```
+
+Claude API キーは `.env`（`.env.example` 参照）に設定し、本番では Vercel の環境変数で管理します。
+`.env` はコミットしないでください。
+
+## ライセンス
+
+個人開発のポートフォリオ作品です。
